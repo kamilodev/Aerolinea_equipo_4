@@ -57,11 +57,6 @@ def insert_data(conn, data):
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
         
-        query_predict = """
-            INSERT INTO predictions (id_passenger, predict)
-            VALUES (%s, %s)
-        """
-        
         cursor.execute(query, (
             data["id_passenger"], data["Gender"], data["Customer_Type"], data["Age"], data["Type_of_Travel"],
             data["Class"], data["Flight_distance"], data["Inflight_wifi_service"], data["datc"],
@@ -71,11 +66,20 @@ def insert_data(conn, data):
             data["Cleanliness"], data["Arrival_delay_minutes"]
         ))
         
-        cursor.execute(query_predict, (
-            data["predict"]
+        cursor.execute("SELECT LAST_INSERT_ID()")
+        ID = cursor.fetchone()["LAST_INSERT_ID()"]
+        
+        predict_query = """
+            INSERT INTO predictions (ID, prediction) VALUES (%s, %s)
+        """
+        
+        cursor.execute(predict_query, (
+            ID, data["predict"]
         ))
         
         conn.commit()
+        cursor.close()
+        conn.close()
     except pymysql.Error as e:
         st.error(f"Error al insertar los datos: {e}")
 
